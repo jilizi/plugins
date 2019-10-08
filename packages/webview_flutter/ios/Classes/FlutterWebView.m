@@ -42,6 +42,7 @@
   // The set of registered JavaScript channel names.
   NSMutableSet* _javaScriptChannelNames;
   FLTWKNavigationDelegate* _navigationDelegate;
+  NSMutableArray * _navigatorUrlStack;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -76,6 +77,10 @@
     [_channel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
       [weakSelf onMethodCall:call result:result];
     }];
+    
+    _navigatorUrlStack = [NSMutableArray array];
+    
+    [_webView addObserver:self forKeyPath:@"URL" options:NSKeyValueObservingOptionNew context:nil];
 
     [self applySettings:settings];
     // TODO(amirh): return an error if apply settings failed once it's possible to do so.
@@ -91,6 +96,20 @@
 
 - (UIView*)view {
   return _webView;
+}
+
+- (void)dealloc {
+    [_webView removeObserver:self forKeyPath:@"URL" context:nil];
+}
+
+#pragma mark - KVO
+-(void)observeValueForKeyPath:(NSString *)keyPath
+                 ofObject:(id)object
+                   change:(NSDictionary<NSKeyValueChangeKey,id> *)change
+                  context:(void *)context{
+    if ([keyPath isEqualToString:@"URL"]) {
+        [_navigatorUrlStack addObject:change[@"new"]];
+    }    
 }
 
 - (void)onMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
