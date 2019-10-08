@@ -139,9 +139,15 @@
     [self clearCache:result];
   } else if ([[call method] isEqualToString:@"getTitle"]) {
     [self onGetTitle:result];
-  } else {
+  } else if ([[call method] isEqualToString:@"getNavigatorUrlStack"]) {
+    [self onGetNavigatorUrlStack:call result:result];
+  }else {
     result(FlutterMethodNotImplemented);
   }
+}
+
+- (void)onGetNavigatorUrlStack:(FlutterMethodCall*)call result:(FlutterResult)result {
+  result(_navigatorUrlStack);
 }
 
 - (void)onUpdateSettings:(FlutterMethodCall*)call result:(FlutterResult)result {
